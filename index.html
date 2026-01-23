@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Zoro lost again</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  font-family: "Comic Sans MS", "Trebuchet MS", sans-serif;
+}
+
+body {
+  margin: 0;
+  background: url("back-g.jpg") center/cover no-repeat;
+}
+
+.overlay {
+  min-height: 100vh;
+  background: rgba(200,230,210,0.65);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 20px;
+}
+
+/* ===== CUTER HEADING ===== */
+h1 {
+  color: #5f9c86;
+  font-weight: 900;
+  font-size: 34px;
+  padding: 6px 18px;
+  border-radius: 14px;
+  text-shadow:
+    -1px -1px 0 #e9f6ef,
+     1px -1px 0 #e9f6ef,
+    -1px  1px 0 #e9f6ef,
+     1px  1px 0 #e9f6ef;
+  margin-bottom: 12px;
+}
+
+.game-frame {
+  position: relative;
+  padding: 24px;
+  border: 6px dashed #e6f2e8;
+  border-radius: 20px;
+}
+
+/* Decorative stickers */
+.stix2 {
+  position: absolute;
+  top: -20px;
+  left: -20px;
+  width: 70px;
+}
+
+.stix3 {
+  position: absolute;
+  bottom: -25px;
+  right: -25px;
+  width: 90px;
+}
+
+/* Layout */
+.game-layout {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.rotate-col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.rotate-btn {
+  width: 60px;
+  height: 60px;
+  background: #d7eadf;
+  border-radius: 15px;
+  font-size: 26px;
+  border: none;
+}
+
+/* Board */
+.board-rotator {
+  width: 320px;
+  height: 320px;
+  transition: transform 0.6s ease;
+}
+
+.board {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  grid-template-rows: repeat(4,1fr);
+  border: 6px dashed #e6f2e8;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.tile {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.light { background: #e8f3dc; }
+.dark  { background: #a7c87a; }
+
+.dojo {
+  background: #ffd700 !important;
+  font-weight: bold;
+}
+
+/* Zoro */
+#zoro {
+  width: 55px;
+  position: absolute;
+  transition: transform 0.6s ease;
+}
+
+/* Dialogue */
+.dialogue {
+  margin-top: 16px;
+  padding: 10px 20px;
+  background: #f1fff6;
+  border-radius: 20px;
+  border: 3px solid #cfe6d8;
+  color: #6f8f7a;
+}
+
+/* ===== LOSER POPUP ===== */
+#losePopup {
+  position: fixed;
+  inset: 0;
+  background: rgba(200,230,210,0.75);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.popup-box {
+  background: #f1fff6;
+  border: 5px dashed #cfe6d8;
+  border-radius: 24px;
+  padding: 28px 34px;
+  text-align: center;
+  color: #6f8f7a;
+  font-size: 20px;
+}
+
+/* ===== SLOW DOWN POPUP ===== */
+#spamPopup {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 998;
+}
+
+.spam-box {
+  background: #fff5f7;
+  border: 4px dashed #f2b6c6;
+  border-radius: 22px;
+  padding: 24px 30px;
+  text-align: center;
+  color: #b35a72;
+  font-size: 20px;
+  animation: vibrate 0.15s infinite;
+}
+
+.spam-box img {
+  width: 80px;
+  display: block;
+  margin: 0 auto 10px;
+}
+
+@keyframes vibrate {
+  0% { transform: translate(0); }
+  25% { transform: translate(-2px, 2px); }
+  50% { transform: translate(2px, -2px); }
+  75% { transform: translate(-2px, -2px); }
+  100% { transform: translate(0); }
+}
+</style>
+</head>
+
+<body>
+
+<div class="overlay">
+<h1>Zoro lost again</h1>
+
+<div class="game-frame">
+
+<img src="stix-2.png" class="stix2">
+<img src="stix-3.png" class="stix3">
+
+<div class="game-layout">
+
+<div class="rotate-col">
+  <button class="rotate-btn" onclick="rotateBoard(-90,'up')">⬆</button>
+  <button class="rotate-btn" onclick="rotateBoard(90,'down')">⬇</button>
+</div>
+
+<div class="board-rotator" id="rotator">
+  <div class="board" id="board"></div>
+</div>
+
+<div class="rotate-col">
+  <button class="rotate-btn" onclick="rotateBoard(-90,'left')">⬅</button>
+  <button class="rotate-btn" onclick="rotateBoard(90,'right')">➡</button>
+</div>
+
+</div>
+
+<div class="dialogue">Ready?</div>
+</div>
+</div>
+
+<!-- Lose popup -->
+<div id="losePopup">
+  <div class="popup-box">
+    <p>He found the dojo,<br><strong>you’re such a loser</strong></p>
+    <button onclick="closePopup()">ok…</button>
+  </div>
+</div>
+
+<!-- Spam popup -->
+<div id="spamPopup">
+  <div class="spam-box">
+    <img src="stix-5.png">
+    <p><strong>Slow down freak!</strong></p>
+  </div>
+</div>
+
+<script>
+const board = document.getElementById("board");
+const rotator = document.getElementById("rotator");
+
+let rotation = 0;
+let zoroIndex = 4;
+let speed = 700;
+let moveTimer;
+let falling = false;
+
+let rotateCount = 0;
+let spamTimeout = null;
+
+/* Build board */
+for (let i = 0; i < 16; i++) {
+  const tile = document.createElement("div");
+  tile.className = "tile " + ((i + Math.floor(i/4)) % 2 === 0 ? "light" : "dark");
+  if (i === 15) {
+    tile.classList.add("dojo");
+    tile.textContent = "Dojo";
+  }
+  board.appendChild(tile);
+}
+
+spawnZoro();
+startMoving();
+
+/* Zoro */
+function spawnZoro() {
+  document.querySelectorAll("#zoro").forEach(z => z.remove());
+  const z = document.createElement("img");
+  z.src = "stix-1.png";
+  z.id = "zoro";
+  board.children[zoroIndex].appendChild(z);
+}
+
+function startMoving() {
+  clearInterval(moveTimer);
+  moveTimer = setInterval(() => {
+    if (falling) return;
+    if (zoroIndex < 15) {
+      zoroIndex++;
+      spawnZoro();
+    } else {
+      clearInterval(moveTimer);
+      showLosePopup();
+    }
+  }, speed);
+}
+
+/* Rotation with HARD difficulty ramp */
+function rotateBoard(deg, dir) {
+  handleSpam();
+  if (falling) return;
+
+  rotation += deg;
+  rotator.style.transform = `rotate(${rotation}deg)`;
+
+  falling = true;
+  clearInterval(moveTimer);
+
+  const z = document.getElementById("zoro");
+  const distance = 80 * 3.2;
+  let x = 0, y = 0;
+
+  if (dir === "down") y = distance;
+  if (dir === "right") x = distance;
+  if (dir === "up") y = -distance;
+  if (dir === "left") x = -distance;
+
+  z.style.transform = `translate(${x}px, ${y}px) rotate(${deg / 1.3}deg)`;
+
+  setTimeout(() => {
+    zoroIndex = 4;
+
+    /* 🔥 AGGRESSIVE SPEED INCREASE */
+    speed = Math.max(110, speed * 0.72);
+
+    falling = false;
+    spawnZoro();
+    startMoving();
+  }, 650);
+}
+
+/* Popups */
+function showLosePopup() {
+  document.getElementById("losePopup").style.display = "flex";
+}
+
+function closePopup() {
+  document.getElementById("losePopup").style.display = "none";
+  zoroIndex = 4;
+  speed = 700;
+  spawnZoro();
+  startMoving();
+}
+
+/* Spam popup logic */
+function handleSpam() {
+  rotateCount++;
+  if (rotateCount >= 5) {
+    showSpamPopup();
+    rotateCount = 0;
+  }
+  clearTimeout(spamTimeout);
+  spamTimeout = setTimeout(() => rotateCount = 0, 1500);
+}
+
+function showSpamPopup() {
+  const popup = document.getElementById("spamPopup");
+  popup.style.display = "flex";
+  setTimeout(() => popup.style.display = "none", 4000);
+}
+</script>
+
+</body>
+</html>
